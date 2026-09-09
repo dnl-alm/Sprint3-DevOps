@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Criar conta')}"></head>
+
+<body>
+
+<main class="container">
+    <div class="caixa-auth">
+
+        <h1 class="mb-1">Criar conta</h1>
+        <p class="text-secondary mb-4">Leva menos de um minuto.</p>
+
+        <div class="card">
+            <div class="card-body">
+
+                <form th:action="@{/cadastro}" th:object="${form}" method="post">
+
+                    <!-- Erros que não pertencem a um campo: e-mail duplicado, por exemplo.
+                         Precisa estar dentro do form, onde th:object está no contexto. -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome completo</label>
+                        <input type="text" id="nome" th:field="*{nome}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                        <div class="campo-erro" th:if="${#fields.hasErrors('nome')}"
+                             th:errors="*{nome}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" id="email" th:field="*{email}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                        <div class="campo-erro" th:if="${#fields.hasErrors('email')}"
+                             th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" id="senha" th:field="*{senha}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
+                        <div class="form-text">No mínimo 8 caracteres.</div>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('senha')}"
+                             th:errors="*{senha}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" id="telefone" th:field="*{telefone}"
+                               class="form-control" placeholder="11987654321"
+                               th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid'">
+                        <div class="campo-erro" th:if="${#fields.hasErrors('telefone')}"
+                             th:errors="*{telefone}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="perfil" class="form-label">Tipo de conta</label>
+                        <select id="perfil" th:field="*{perfil}" class="form-select"
+                                th:classappend="${#fields.hasErrors('perfil')} ? 'is-invalid'">
+                            <option value="">Selecione</option>
+                            <option th:each="p : ${perfis}"
+                                    th:value="${p}"
+                                    th:text="${p.name() == 'RESPONSAVEL'}
+                                             ? 'Tutor de pet' : 'Veterinário'"></option>
+                        </select>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('perfil')}"
+                             th:errors="*{perfil}"></div>
+                    </div>
+
+                    <!-- Exibido pelo app.js quando o perfil é VETERINARIO.
+                         A obrigatoriedade do CRMV é verificada no controller. -->
+                    <div id="camposVeterinario" style="display: none">
+
+                        <div class="mb-3">
+                            <label for="crmv" class="form-label">CRMV</label>
+                            <input type="text" id="crmv" th:field="*{crmv}"
+                                   class="form-control" placeholder="SP-12345"
+                                   th:classappend="${#fields.hasErrors('crmv')} ? 'is-invalid'">
+                            <div class="campo-erro" th:if="${#fields.hasErrors('crmv')}"
+                                 th:errors="*{crmv}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="especialidade" class="form-label">Especialidade</label>
+                            <input type="text" id="especialidade" th:field="*{especialidade}"
+                                   class="form-control" placeholder="Clínica geral">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-2">Criar conta</button>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-center mt-4 mb-0">
+            Já tem conta?
+            <a th:href="@{/login}">Entrar</a>
+        </p>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

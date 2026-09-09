@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Agenda')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <h1 class="mb-4">Agenda</h1>
+
+    <!-- GET simples: a data vai como query param -->
+    <form th:action="@{/vet/agenda}" method="get" class="row g-2 align-items-end mb-4"
+          style="max-width: 26rem">
+        <div class="col">
+            <label for="data" class="form-label">Dia</label>
+            <input type="date" id="data" name="data" class="form-control"
+                   th:value="${#temporals.format(data, 'yyyy-MM-dd')}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Ver agenda</button>
+        </div>
+    </form>
+
+    <h2 class="mb-3" th:text="${#temporals.format(data, 'dd/MM/yyyy')}">data</h2>
+
+    <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
+        <p class="mb-0">Nenhuma consulta agendada para este dia.</p>
+    </div>
+
+    <div class="list-group" th:unless="${#lists.isEmpty(consultas)}">
+        <div class="list-group-item" th:each="c : ${consultas}">
+
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+
+                <div class="d-flex gap-3 align-items-start">
+                    <p class="fs-5 fw-semibold mb-0"
+                       th:text="${#temporals.format(c.data, 'HH:mm')}">00:00</p>
+
+                    <div>
+                        <p class="mb-1 fw-semibold" th:text="${c.petNome}">Pet</p>
+                        <p class="mb-1 small text-secondary">
+                            <span th:text="${c.tipo}">TIPO</span>
+                            <span th:if="${c.descricao}" th:text="' · ' + ${c.descricao}"></span>
+                        </p>
+                        <p class="mb-0 small" th:if="${c.observacoes}"
+                           th:text="${c.observacoes}">observações</p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="status"
+                          th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
+                          th:text="${c.status}">STATUS</span>
+
+                    <a th:if="${c.status.name() == 'AGENDADA'}"
+                       th:href="@{/vet/atender/{id}(id=${c.id})}"
+                       class="btn btn-sm btn-primary">Atender</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

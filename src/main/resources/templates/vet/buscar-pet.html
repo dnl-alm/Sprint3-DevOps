@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Buscar pet')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <h1 class="mb-4">Buscar pet</h1>
+
+    <form th:action="@{/vet/pets}" method="get" class="row g-2 align-items-end mb-4"
+          style="max-width: 30rem">
+        <div class="col">
+            <label for="nome" class="form-label">Nome do pet</label>
+            <input type="text" id="nome" name="nome" class="form-control"
+                   th:value="${nome}" placeholder="Thor" autofocus>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </form>
+
+    <!-- Antes da primeira busca não há nada a mostrar -->
+    <div th:if="${nome == null or #strings.isEmpty(nome)}" class="vazio">
+        <p class="mb-0">Digite o nome de um pet para consultar seus dados.</p>
+    </div>
+
+    <div th:if="${nome != null and !#strings.isEmpty(nome) and #lists.isEmpty(pets)}"
+         class="vazio">
+        <p class="mb-0">Nenhum pet encontrado com esse nome.</p>
+    </div>
+
+    <div class="row g-3" th:unless="${#lists.isEmpty(pets)}">
+        <div class="col-md-6" th:each="p : ${pets}">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <h2 class="mb-1" th:text="${p.nome}">Nome</h2>
+
+                    <p class="text-secondary mb-2">
+                        <span th:text="${p.raca} ?: 'Raça não informada'">Raça</span> ·
+                        <span th:text="${p.sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</span> ·
+                        <span th:text="${p.idade} + (${p.idade} == 1 ? ' ano' : ' anos')">idade</span>
+                        <span th:if="${p.peso}" th:text="' · ' + ${p.peso} + ' kg'"></span>
+                    </p>
+
+                    <p class="small mb-0">
+                        <span class="fw-semibold">Tutor:</span>
+                        <span th:text="${p.responsavelNome}">tutor</span>
+                    </p>
+
+                    <p class="small text-secondary mb-0">
+                        <span th:text="${p.totalConsultas}">0</span>
+                        <span th:text="${p.totalConsultas} == 1 ? 'consulta' : 'consultas'">consultas</span>
+                        <span th:if="${p.proximaConsulta}">
+                            · próxima em
+                            <span th:text="${#temporals.format(p.proximaConsulta, 'dd/MM ''às'' HH:mm')}">data</span>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

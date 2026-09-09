@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head(${edicao} ? 'Reagendar consulta' : 'Agendar consulta')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <nav aria-label="Você está em" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/consultas}">Consultas</a></li>
+            <li class="breadcrumb-item active" aria-current="page"
+                th:text="${edicao} ? 'Reagendar' : 'Agendar'">Agendar</li>
+        </ol>
+    </nav>
+
+    <div style="max-width: 34rem">
+
+        <h1 class="mb-4"
+            th:text="${edicao} ? 'Reagendar consulta' : 'Agendar consulta'">Agendar consulta</h1>
+
+        <div class="card">
+            <div class="card-body">
+
+                <form th:action="${edicao}
+                                 ? @{/app/consultas/{id}(id=${consultaId})}
+                                 : @{/app/consultas}"
+                      th:object="${form}" method="post">
+
+                    <!-- As regras de agendamento recusadas pela API chegam aqui -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="petId" class="form-label">Pet</label>
+                        <select id="petId" th:field="*{petId}" class="form-select"
+                                th:disabled="${edicao}"
+                                th:classappend="${#fields.hasErrors('petId')} ? 'is-invalid'">
+                            <option value="">Selecione</option>
+                            <option th:each="p : ${pets}"
+                                    th:value="${p.id}" th:text="${p.nome}"></option>
+                        </select>
+                        <div class="form-text" th:if="${edicao}">
+                            O pet não pode ser alterado ao reagendar.
+                        </div>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('petId')}"
+                             th:errors="*{petId}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="veterinarioId" class="form-label">Veterinário</label>
+                        <select id="veterinarioId" th:field="*{veterinarioId}" class="form-select"
+                                th:disabled="${edicao}"
+                                th:classappend="${#fields.hasErrors('veterinarioId')} ? 'is-invalid'">
+                            <option value="">Selecione</option>
+                            <option th:each="v : ${veterinarios}"
+                                    th:value="${v.id}"
+                                    th:text="${v.nome} + (${v.especialidade}
+                                             ? ' — ' + ${v.especialidade} : '')"></option>
+                        </select>
+                        <div class="form-text" th:if="${edicao}">
+                            O veterinário não pode ser alterado ao reagendar.
+                        </div>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('veterinarioId')}"
+                             th:errors="*{veterinarioId}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de consulta</label>
+                        <select id="tipo" th:field="*{tipo}" class="form-select"
+                                th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid'">
+                            <option value="">Selecione</option>
+                            <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('tipo')}"
+                             th:errors="*{tipo}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data e hora</label>
+                        <input type="datetime-local" id="data" th:field="*{data}"
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('data')} ? 'is-invalid'">
+                        <div class="form-text">
+                            Atendimento de segunda a sábado, das 08:00 às 18:00,
+                            com no mínimo 2 horas de antecedência.
+                        </div>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('data')}"
+                             th:errors="*{data}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="descricao" class="form-label">Motivo da consulta</label>
+                        <textarea id="descricao" th:field="*{descricao}" class="form-control"
+                                  rows="3" placeholder="Check-up semestral"
+                                  th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('descricao')}"
+                             th:errors="*{descricao}"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"
+                                th:text="${edicao} ? 'Salvar alterações' : 'Agendar consulta'">
+                            Agendar consulta
+                        </button>
+                        <a th:href="@{/app/consultas}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

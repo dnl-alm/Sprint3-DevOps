@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head(${pet.nome})}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <nav aria-label="Você está em" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/app/pets}">Meus pets</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${pet.nome}">Pet</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="mb-1" th:text="${pet.nome}">Nome</h1>
+            <p class="text-secondary mb-0">
+                <span th:text="${pet.raca} ?: 'Raça não informada'">Raça</span> ·
+                <span th:text="${pet.sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</span> ·
+                <span th:text="${pet.idade} + (${pet.idade} == 1 ? ' ano' : ' anos')">idade</span>
+                <span th:if="${pet.peso}" th:text="' · ' + ${pet.peso} + ' kg'"></span>
+            </p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a th:href="@{/app/consultas/nova(petId=${pet.id})}"
+               class="btn btn-primary">Agendar consulta</a>
+            <a th:href="@{/app/pets/{id}/historico(id=${pet.id})}"
+               class="btn btn-outline-primary">Histórico clínico</a>
+            <a th:href="@{/app/pets/{id}/editar(id=${pet.id})}"
+               class="btn btn-outline-secondary">Editar</a>
+        </div>
+    </div>
+
+    <section>
+        <h2 class="mb-3">Consultas</h2>
+
+        <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
+            <p class="mb-3" th:text="|${pet.nome} ainda não tem consultas registradas.|"></p>
+            <a th:href="@{/app/consultas/nova(petId=${pet.id})}"
+               class="btn btn-primary">Agendar a primeira</a>
+        </div>
+
+        <div class="list-group" th:unless="${#lists.isEmpty(consultas)}">
+            <div class="list-group-item" th:each="c : ${consultas}">
+
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <p class="mb-1">
+                            <span class="fw-semibold" th:text="${c.tipo}">TIPO</span>
+                            <span class="text-secondary"
+                                  th:text="' · ' + ${c.veterinarioNome}">vet</span>
+                        </p>
+                        <p class="mb-1 small text-secondary"
+                           th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
+                        <p class="mb-0 small" th:if="${c.observacoes}"
+                           th:text="${c.observacoes}">observações</p>
+                    </div>
+
+                    <span class="status"
+                          th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
+                          th:text="${c.status}">STATUS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-5 pt-4 border-top">
+        <form th:action="@{/app/pets/{id}/remover(id=${pet.id})}" method="post"
+              th:data-nome="${pet.nome}"
+              onsubmit="return confirmarRemocao(this)">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                Remover este pet
+            </button>
+            <span class="small text-secondary ms-2">
+                Não é possível remover um pet com consultas agendadas.
+            </span>
+        </form>
+    </section>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

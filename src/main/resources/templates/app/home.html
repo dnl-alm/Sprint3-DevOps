@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Início')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <h1 class="mb-4">Olá, <span sec:authentication="name">você</span></h1>
+
+    <!-- ---------- Resumo ---------- -->
+    <div class="row g-3 mb-5">
+        <div class="col-sm-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="card-titulo-secao">Pets cadastrados</p>
+                    <p class="display-6 mb-0" th:text="${totalPets}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="card-titulo-secao">Consultas nas próximas 48 horas</p>
+                    <p class="display-6 mb-0" th:text="${#lists.size(proximasConsultas)}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------- Próximas consultas ---------- -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Próximas consultas</h2>
+            <a th:href="@{/app/consultas}" class="btn btn-sm btn-outline-primary">Ver todas</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(proximasConsultas)}" class="vazio">
+            <p class="mb-3">Nenhuma consulta nas próximas 48 horas.</p>
+            <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar consulta</a>
+        </div>
+
+        <div class="list-group" th:unless="${#lists.isEmpty(proximasConsultas)}">
+            <div class="list-group-item d-flex justify-content-between align-items-center"
+                 th:each="c : ${proximasConsultas}">
+                <div>
+                    <p class="mb-1 fw-semibold" th:text="${c.petNome}">Pet</p>
+                    <p class="mb-0 small text-secondary">
+                        <span th:text="${c.veterinarioNome}">Veterinário</span> ·
+                        <span th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</span>
+                    </p>
+                </div>
+                <span class="status status-agendada" th:text="${c.tipo}">TIPO</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ---------- Pets ---------- -->
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Seus pets</h2>
+            <a th:href="@{/app/pets}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(pets)}" class="vazio">
+            <p class="mb-3">Você ainda não cadastrou nenhum pet.</p>
+            <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
+        </div>
+
+        <div class="row g-3" th:unless="${#lists.isEmpty(pets)}">
+            <div class="col-md-4" th:each="p : ${pets}">
+                <a th:href="@{/app/pets/{id}(id=${p.id})}"
+                   class="card h-100 text-decoration-none text-body">
+                    <div class="card-body">
+                        <p class="fw-semibold mb-1" th:text="${p.nome}">Nome</p>
+                        <p class="small text-secondary mb-0"
+                           th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

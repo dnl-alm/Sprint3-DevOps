@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Não foi possível continuar')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+    <div class="caixa-auth text-center">
+
+        <h1 class="mb-3">Não foi possível continuar</h1>
+
+        <p class="text-secondary mb-4"
+           th:text="${mensagem} ?: 'Ocorreu um erro ao processar sua solicitação.'"></p>
+
+        <a sec:authorize="hasRole('RESPONSAVEL')"
+           th:href="@{/app/home}" class="btn btn-primary">Voltar ao início</a>
+
+        <a sec:authorize="hasRole('VETERINARIO')"
+           th:href="@{/vet/agenda}" class="btn btn-primary">Voltar à agenda</a>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

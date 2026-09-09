@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Consultas')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Consultas</h1>
+        <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar consulta</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
+        <p class="mb-3">Nenhuma consulta registrada.</p>
+        <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar a primeira</a>
+    </div>
+
+    <div class="row g-3" th:unless="${#lists.isEmpty(consultas)}">
+        <div class="col-lg-6" th:each="c : ${consultas}">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h2 class="mb-0" th:text="${c.petNome}">Pet</h2>
+                        <span class="status"
+                              th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
+                              th:text="${c.status}">STATUS</span>
+                    </div>
+
+                    <p class="text-secondary mb-2">
+                        <span th:text="${c.tipo}">TIPO</span> ·
+                        <span th:text="${c.veterinarioNome}">Veterinário</span>
+                        <span th:if="${c.veterinarioEspecialidade}"
+                              th:text="' (' + ${c.veterinarioEspecialidade} + ')'"></span>
+                    </p>
+
+                    <p class="mb-2"
+                       th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
+
+                    <p class="small text-secondary mb-3" th:if="${c.descricao}"
+                       th:text="${c.descricao}">descrição</p>
+
+                    <p class="small mb-3" th:if="${c.observacoes}">
+                        <span class="fw-semibold">Observações do veterinário:</span>
+                        <span th:text="${c.observacoes}">obs</span>
+                    </p>
+
+                    <!-- podeEditar e podeCancelar vêm calculados da API.
+                         A regra das 24h não é replicada aqui. -->
+                    <div class="d-flex gap-2 flex-wrap">
+
+                        <a th:if="${c.podeEditar}"
+                           th:href="@{/app/consultas/{id}/editar(id=${c.id})}"
+                           class="btn btn-sm btn-outline-secondary">Reagendar</a>
+
+                        <!-- Cancelar mantém o registro com status CANCELADA -->
+                        <form th:if="${c.podeCancelar}"
+                              th:action="@{/app/consultas/{id}/cancelar(id=${c.id})}"
+                              method="post" class="m-0"
+                              onsubmit="return confirm('Cancelar esta consulta? O registro será mantido no histórico.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                        </form>
+
+                        <!-- Excluir apaga o registro -->
+                        <form th:if="${c.status.name() == 'AGENDADA'}"
+                              th:action="@{/app/consultas/{id}/remover(id=${c.id})}"
+                              method="post" class="m-0"
+                              onsubmit="return confirm('Excluir esta consulta? O registro será apagado permanentemente.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                        </form>
+
+                        <a th:href="@{/app/pets/{id}(id=${c.petId})}"
+                           class="btn btn-sm btn-outline-primary">Ver pet</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

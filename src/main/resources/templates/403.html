@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Acesso negado')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+    <div class="caixa-auth text-center">
+
+        <p class="status status-cancelada d-inline-block mb-3">Erro 403</p>
+
+        <h1 class="mb-3">Esta área não é sua</h1>
+
+        <p class="text-secondary mb-4">
+            Você está autenticado, mas seu perfil não tem permissão para acessar esta página.
+        </p>
+
+        <!-- Cada perfil volta para a sua própria área inicial -->
+        <a sec:authorize="hasRole('RESPONSAVEL')"
+           th:href="@{/app/home}" class="btn btn-primary">Ir para o início</a>
+
+        <a sec:authorize="hasRole('VETERINARIO')"
+           th:href="@{/vet/agenda}" class="btn btn-primary">Ir para a agenda</a>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>
