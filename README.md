@@ -4,6 +4,16 @@ Aplicação web e API REST para gestão de clínica veterinária, desenvolvida e
 
 ---
 
+# Desenvolvido por
+
+- Guilherme Cintra RM562850
+- Erick de Faria Gama RM561951
+- Matheus Nascimento Corregio RM563765
+- Pedro Fonseca de Almeida RM563466
+- Daniel Fonseca de Almeida RM563045
+
+---
+
 # Objetivo
 
 A aplicação auxilia no acompanhamento clínico contínuo de animais de estimação, permitindo:
@@ -24,62 +34,7 @@ A API foi desenvolvida utilizando arquitetura REST e persistência em banco de d
 
 A solução segue um modelo de **aplicação monolítica hospedada em PaaS com banco de dados externo gerenciado**. Não há infraestrutura de servidor sob nossa responsabilidade: o Azure App Service cuida do runtime Java e o Oracle Cloud cuida do banco. O que gerenciamos é o *código* e a *configuração*.
 
-Essa escolha é deliberada. Para uma API CRUD com um único domínio coeso, containerizar manualmente ou quebrar em microsserviços adicionaria custo operacional sem benefício real — o App Service já resolve build, deploy, escala vertical, HTTPS e reinício automático.
-
-```mermaid
-graph TB
-    subgraph CLIENTES[" CLIENTES  "]
-        direction LR
-        BROWSER("Navegador<br/><small>interface web</small>")
-        APICLIENT("Clientes REST<br/><small>mobile · Postman</small>")
-    end
-
-    subgraph GITHUB[" GITHUB  "]
-        direction LR
-        REPO("Repositório<br/><small>branch main</small>")
-        ACTIONS("GitHub Actions<br/><small>build Maven + deploy</small>")
-    end
-
-    subgraph AZURE[" MICROSOFT AZURE — Resource Group "]
-        direction TB
-        WEBAPP("<b>Azure App Service</b><br/><small>Java 21 · Spring Boot · HTTPS</small>")
-        PLAN("App Service Plan<br/><small>Linux · SKU F1</small>")
-        SCM("Endpoint SCM / Kudu<br/><small>publish profile</small>")
-        INSIGHTS("Application Insights<br/><small>métricas · logs · traces</small>")
-    end
-
-    subgraph ORACLE[" ORACLE FIAP  "]
-        DB[("Oracle Database<br/><small></small>")]
-    end
-
-    BROWSER -->|HTTPS 443| WEBAPP
-    APICLIENT -->|HTTPS 443<br/>Bearer JWT| WEBAPP
-
-    REPO -->|push na main| ACTIONS
-    ACTIONS -->|deploy do .jar| SCM
-    SCM --> WEBAPP
-
-    PLAN -.->|hospeda| WEBAPP
-    WEBAPP -->|JDBC 1521| DB
-    WEBAPP -->|telemetria| INSIGHTS
-
-    classDef cliente fill:#E3F2FD,stroke:#1976D2,stroke-width:2px,color:#0D47A1
-    classDef github fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#311B92
-    classDef azure fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
-    classDef principal fill:#B3E5FC,stroke:#0277BD,stroke-width:3px,color:#01579B
-    classDef banco fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#B71C1C
-
-    class BROWSER,APICLIENT cliente
-    class REPO,ACTIONS github
-    class PLAN,SCM,INSIGHTS azure
-    class WEBAPP principal
-    class DB banco
-
-    style CLIENTES fill:#FAFAFA,stroke:#BDBDBD,stroke-width:2px
-    style GITHUB fill:#FAFAFA,stroke:#BDBDBD,stroke-width:2px
-    style AZURE fill:#F5FBFF,stroke:#0288D1,stroke-width:2px
-    style ORACLE fill:#FFF8F8,stroke:#C62828,stroke-width:2px
-```
+![Arquitetura da solução YourPetHealth](/docs/architecture.svg)
 
 ## Recursos utilizados
 
@@ -97,31 +52,7 @@ graph TB
 
 ## Camadas da aplicação
 
-Dentro do App Service, a aplicação segue arquitetura em camadas:
-
-```mermaid
-graph LR
-    REQ("Requisição<br/>HTTP") --> SEC("Spring Security<br/><small>filtro JWT</small>")
-    SEC --> CTRL("Controllers<br/><small>/api/**</small>")
-    CTRL --> SRV("Services<br/><small>regras de negócio</small>")
-    SRV --> RPO("Repositories<br/><small>Spring Data JPA</small>")
-    RPO --> HIB("Hibernate")
-    HIB --> DB[("Oracle<br/>Cloud")]
-
-    FLY("Flyway<br/><small>na inicialização</small>") -.->|migrations versionadas| DB
-
-    classDef entrada fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#E65100
-    classDef seguranca fill:#FCE4EC,stroke:#AD1457,stroke-width:2px,color:#880E4F
-    classDef camada fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
-    classDef infra fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#311B92
-    classDef banco fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#B71C1C
-
-    class REQ entrada
-    class SEC seguranca
-    class CTRL,SRV,RPO camada
-    class HIB,FLY infra
-    class DB banco
-```
+Dentro do App Service, a aplicação segue arquitetura em camadas — requisição HTTP → Spring Security (filtro JWT) → Controllers (`/api/**`) → Services → Repositories (Spring Data JPA) → Hibernate → Oracle Database, com o Flyway atuando à parte, aplicando as migrations no banco a cada inicialização:
 
 - **Spring Security** valida o token JWT antes de qualquer controller ser alcançado; rotas de autenticação e a interface web ficam fora dessa exigência.
 - **Controllers** expõem os endpoints REST e traduzem HTTP em chamadas de serviço — sem regra de negócio.
@@ -135,25 +66,7 @@ graph LR
 
 ## 1. Fluxo de deploy (CI/CD)
 
-É o fluxo que caracteriza a esteira de DevOps: da alteração no código até a aplicação no ar, sem intervenção manual.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor DEV as Desenvolvedor
-    participant GH as GitHub
-    participant GA as GitHub Actions
-    participant AS as App Service
-    participant DB as Oracle Cloud
-
-    DEV->>GH: git push na branch main
-    GH->>GA: dispara o workflow
-    GA->>GA: mvn clean package (build + testes)
-    GA->>AS: publica o .jar via SCM
-    AS->>AS: reinicia o container Java 21
-    AS->>DB: Flyway valida/aplica migrations
-    AS-->>DEV: nova versão no ar na URL pública
-```
+É o fluxo que caracteriza a esteira de DevOps: da alteração no código até a aplicação no ar, sem intervenção manual — corresponde à seta ② do diagrama de arquitetura. Na prática: o desenvolvedor faz `git push` na branch `main` → o GitHub Actions dispara o workflow → roda `mvn clean package` (build e testes) → publica o `.jar` no App Service via SCM → o App Service reinicia o container Java 21 → o Flyway valida/aplica as migrations no Oracle → a nova versão fica disponível na URL pública.
 
 **Provisionamento inicial** (executado uma única vez, via `azure/deploy-azure.sh`):
 
@@ -167,27 +80,11 @@ sequenceDiagram
 8. Vincula o Web App ao Application Insights
 9. Cria o workflow do GitHub Actions no repositório
 
-A partir daí, o passo 1 do diagrama acima é o único necessário para novas versões.
+A partir daí, um simples `git push` na branch `main` é suficiente para publicar novas versões — os 9 passos acima não se repetem.
 
 ## 2. Fluxo de observabilidade
 
-```mermaid
-graph LR
-    APP("Aplicação<br/>Spring Boot") -->|agente Java<br/>auto-instrumentado| AI("Application<br/>Insights")
-    AI --> M("Métricas<br/><small>latência · throughput</small>")
-    AI --> L("Logs<br/><small>e exceções</small>")
-    AI --> D("Dependências<br/><small>chamadas JDBC</small>")
-
-    classDef app fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
-    classDef ai fill:#B3E5FC,stroke:#0277BD,stroke-width:3px,color:#01579B
-    classDef saida fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
-
-    class APP app
-    class AI ai
-    class M,L,D saida
-```
-
-A instrumentação é habilitada apenas por variáveis de ambiente (`ApplicationInsightsAgent_EXTENSION_VERSION`, `XDT_MicrosoftApplicationInsights_Mode`) — **nenhuma linha de código da aplicação precisa mudar**. O agente intercepta requisições HTTP e chamadas JDBC automaticamente, o que permite identificar se uma lentidão vem da aplicação ou da latência até o Oracle Cloud.
+Corresponde à seta ④ do diagrama: a aplicação envia métricas (latência, throughput), logs/exceções e dependências (chamadas JDBC ao Oracle) automaticamente para o Application Insights. A instrumentação é habilitada apenas por variáveis de ambiente (`ApplicationInsightsAgent_EXTENSION_VERSION`, `XDT_MicrosoftApplicationInsights_Mode`) — **nenhuma linha de código da aplicação precisa mudar**. O agente intercepta requisições HTTP e chamadas JDBC automaticamente, o que permite identificar se uma lentidão vem da aplicação ou da latência até o Oracle Cloud.
 
 ## Segurança e configuração
 
@@ -203,7 +100,7 @@ A instrumentação é habilitada apenas por variáveis de ambiente (`Application
 
 # Como criar o Web App no Azure
 
-O script de provisionamento está em **`azure/deploy-azure.sh`**.
+O script de provisionamento está em **`azure/deploy.sh`**.
 
 ## Pré-requisitos
 
@@ -223,18 +120,36 @@ cd azure
 **2. Execute o script**
 
 ```bash
-./deploy-azure.sh
+chmod +x deploy.sh
 ```
 
-Ele executa os nove passos de provisionamento em sequência — cada comando só roda após o anterior concluir, e o script aborta se qualquer etapa falhar.
+```bash
+./deploy.sh
+```
+
+Ele executa os nove passos de provisionamento em sequência. Cada comando só roda após o anterior concluir, e o script aborta se qualquer etapa falhar.
 
 **3. Autorize o GitHub quando solicitado**
 
 O último comando (`az webapp deployment github-actions add`) abre um fluxo de autorização do GitHub no navegador. Sem essa autorização o workflow não é criado no repositório.
 
-**4. Acompanhe o primeiro deploy**
+**4. Adicione as variáveis de ambiente necessárias dentro de workflows**
 
-O Azure cria o arquivo `.github/workflows/*.yml` no repositório e dispara o primeiro build automaticamente. Acompanhe em **GitHub → Actions**.
+Altere o arquivo `.github/workflows/*.yml` adicionando:
+
+```
+- name: Build with Maven
+      run: mvn clean install
+      env: 
+        SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+        SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+        SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+```
+
+**5. Acompanhe o primeiro deploy**
+
+Acompanhe em **GitHub → Actions**.
 
 ## Depois do primeiro deploy
 

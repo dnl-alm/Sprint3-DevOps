@@ -10,6 +10,14 @@ GITHUB_REPO_NAME="dnl-alm/Sprint3-DevOps"
 BRANCH="main"
 APP_INSIGHTS_NAME="ai-yourpethealth"
 
+echo ">> Registrando providers e instalando extensões (idempotente)"
+for ns in Microsoft.Web Microsoft.Insights Microsoft.OperationalInsights Microsoft.ServiceLinker; do
+  echo "   - $ns"
+  az provider register --namespace "$ns" --wait
+done
+
+az extension add --name application-insights --upgrade --only-show-errors
+
 echo ">> Criação do Grupo de Recursos"
 az group create \
   --name "$RESOURCE_GROUP_NAME" \
