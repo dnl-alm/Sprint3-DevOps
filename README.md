@@ -14,6 +14,16 @@ Aplicação web e API REST para gestão de clínica veterinária, desenvolvida e
 
 ---
 
+# Descrição do projeto
+
+O YourPetHealth é uma plataforma que centraliza a rotina de clínicas veterinárias e de responsáveis por pets em um único sistema, substituindo controles dispersos em papel, planilhas e agendas separadas.
+
+O sistema é composto por três partes integradas: o sistema principal, desenvolvido em Java com Spring, que guarda todos os dados, aplica as regras de negócio e controla o acesso; um serviço de análise, que avalia a situação do acompanhamento clínico de cada animal; e um aplicativo móvel, por onde tutores e veterinários usam a plataforma no dia a dia.
+
+O sistema principal é o núcleo da solução. Ele é responsável pelo cadastro de pessoas e pets, pelo agendamento de consultas com validação automática das regras de disponibilidade, pelo registro do histórico clínico e pela autenticação com controle de acesso por perfil. Cada usuário enxerga apenas o que lhe diz respeito: um responsável nunca acessa os dados de outro, e não entra nas áreas do veterinário.
+
+---
+
 # Objetivo
 
 A aplicação auxilia no acompanhamento clínico contínuo de animais de estimação, permitindo:
@@ -25,6 +35,20 @@ A aplicação auxilia no acompanhamento clínico contínuo de animais de estima�
 - Histórico clínico gerado automaticamente a cada consulta concluída
 
 A API foi desenvolvida utilizando arquitetura REST e persistência em banco de dados Oracle.
+
+---
+
+# Benefícios para o negócio
+
+Redução de erros e retrabalho. O histórico clínico é gerado automaticamente na conclusão do atendimento, eliminando a digitação duplicada e o risco de divergência entre o que foi feito e o que foi registrado.
+
+Menos conflitos de agenda. O sistema valida antecedência mínima, horário de funcionamento e disponibilidade do veterinário antes de confirmar qualquer marcação, evitando sobreposições que hoje só aparecem no dia.
+
+Otimização da rotina administrativa. O veterinário acessa a agenda do dia e registra o atendimento pelo próprio aplicativo, sem intermediários e sem depender da recepção.
+
+Informação centralizada e acessível. Todo o histórico do animal fica disponível para tutor e clínica a qualquer momento, acabando com a perda de dados e a busca por fichas antigas.
+
+Melhoria no atendimento ao cliente. O tutor agenda, remarca e consulta o histórico sozinho, sem telefonema, o que reduz a carga da recepção e aumenta a autonomia dele.
 
 ---
 
