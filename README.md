@@ -68,7 +68,7 @@ Dentro do App Service, a aplicação segue arquitetura em camadas — requisiç�
 
 É o fluxo que caracteriza a esteira de DevOps: da alteração no código até a aplicação no ar, sem intervenção manual — corresponde à seta ② do diagrama de arquitetura. Na prática: o desenvolvedor faz `git push` na branch `main` → o GitHub Actions dispara o workflow → roda `mvn clean package` (build e testes) → publica o `.jar` no App Service via SCM → o App Service reinicia o container Java 21 → o Flyway valida/aplica as migrations no Oracle → a nova versão fica disponível na URL pública.
 
-**Provisionamento inicial** (executado uma única vez, via `azure/deploy-azure.sh`):
+**Provisionamento inicial** (executado uma única vez, via `azure/deploy.sh`):
 
 1. Cria o Resource Group
 2. Cria o Application Insights
